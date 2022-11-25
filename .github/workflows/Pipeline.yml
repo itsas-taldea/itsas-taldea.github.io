@@ -1,0 +1,33 @@
+name: Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+
+
+  Site:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: '🧰 Checkout'
+        uses: actions/checkout@v3
+        with:
+          repository: itsas-taldea/itsas
+
+      - uses: ./.github/site
+
+      - name: '🚀 Publish to gh-pages'
+        run: |
+          cd dist
+          touch .nojekyll
+          git init
+          cp ../.git/config ./.git/config
+          git remote set-url origin https://github.com/${{ github.repository }}
+          git add .
+          git config --local user.email "push@gha"
+          git config --local user.name "GHA"
+          git commit -a -m "update ${{ github.sha }}"
+          git push -u origin +HEAD:gh-pages
